@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Evidente — Web Development Studio</title>
+    <meta name="description" content="Evidente is a web development studio crafting modern digital experiences." />
+    <meta property="og:title" content="Evidente — Web Development Studio" />
+    <meta property="og:description" content="Crafting modern digital experiences." />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+
+    <div id="overlay" class="hidden">
+      <div class="title">Click anywhere to start exploring</div>
+      <div class="instructions">
+        <div class="key-group">
+          <div class="keys">
+            <span class="key">W</span>
+          </div>
+          <div class="keys">
+            <span class="key">A</span>
+            <span class="key">S</span>
+            <span class="key">D</span>
+          </div>
+          <span>Move</span>
+        </div>
+        <div class="key-group">
+          <div class="mouse-icon"></div>
+          <span>Look around</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="loader">
+      <span>Loading…</span>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
