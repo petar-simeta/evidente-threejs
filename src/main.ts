@@ -14,6 +14,7 @@ import "./style.css";
 async function main() {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
   const overlay = document.getElementById("overlay")!;
+  const welcome = document.getElementById("welcome")!;
   const loader = document.getElementById("loader")!;
 
   // Core setup
@@ -52,6 +53,13 @@ async function main() {
 
   // Hide loader, play intro
   loader.classList.add("hidden");
+
+  // Show "Welcome" when doors open (7s into animation), hide after 3s
+  setTimeout(() => {
+    welcome.classList.remove("hidden");
+    setTimeout(() => welcome.classList.add("hidden"), 3000);
+  }, 7000);
+
   await playIntro(camera, doors);
 
   // Create controls now (reads final camera orientation)

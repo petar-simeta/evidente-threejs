@@ -111,7 +111,7 @@ function createBarTable(scene: THREE.Scene) {
   topMesh.receiveShadow = true;
   scene.add(topMesh);
 
-  // "Hello world..." text on table surface, door side (+z), bottom-right
+  // "Hello world..." text on base front face (+z, door side), bottom-right
   const textCanvas = document.createElement("canvas");
   textCanvas.width = 512;
   textCanvas.height = 128;
@@ -119,15 +119,15 @@ function createBarTable(scene: THREE.Scene) {
   tctx.clearRect(0, 0, 512, 128);
   tctx.fillStyle = "#222222";
   tctx.font = "300 52px DM Sans, Helvetica, Arial, sans-serif";
-  tctx.textAlign = "left";
-  tctx.textBaseline = "middle";
-  tctx.fillText("Hello world...", 20, 64);
+  tctx.textAlign = "right";
+  tctx.textBaseline = "bottom";
+  tctx.fillText("Hello world...", 500, 118);
 
   const textTex = new THREE.CanvasTexture(textCanvas);
   textTex.minFilter = THREE.LinearFilter;
   textTex.colorSpace = THREE.SRGBColorSpace;
 
-  const textW = topW * 0.35;
+  const textW = baseW * 0.6;
   const textH = textW * (128 / 512);
   const textPlane = new THREE.Mesh(
     new THREE.PlaneGeometry(textW, textH),
@@ -141,12 +141,11 @@ function createBarTable(scene: THREE.Scene) {
       polygonOffsetUnits: -1,
     })
   );
-  textPlane.rotation.x = -Math.PI / 2;
-  textPlane.rotation.z = Math.PI;
+  // Upright on the +z face of the base, bottom-right
   textPlane.position.set(
-    cx + topW * 0.2,
-    FLOOR_Y + tableH - 0.03 + 0.005,
-    cz + topD * 0.2
+    cx + baseW * 0.15,
+    FLOOR_Y + baseH * 0.3,
+    cz + baseD / 2 + 0.01
   );
   scene.add(textPlane);
 }
