@@ -14,8 +14,8 @@ const CW = 1024;
 const CH = 680;
 const BORDER = 28;
 
-// Frames per wall: right wall, back wall, left wall
-const WALL_COUNTS = [7, 8, 7];
+// Frames per wall: right wall, back wall (right half only), left wall
+const WALL_COUNTS = [9, 5, 8];
 
 interface ClientInfo {
   name: string;
@@ -25,34 +25,33 @@ interface ClientInfo {
 
 // Ordered per wall, center = most important, edges = least important
 const CLIENTS: ClientInfo[] = [
-  // === Right wall (7 frames) ===
-  // edge → center → edge
-  { name: "Mingot", file: "mingor-logo.svg", badges: ["Website"] },
+  // === Right wall (9 frames) ===
+  { name: "Autohrvatska", file: "autohrvatska-logo.svg", badges: ["Webshop", "Support"] },
   { name: "Ritosa", file: "brati-ritosa-logo.jpg", badges: ["Website", "Webshop"] },
   { name: "Fruklab", file: "fruklab-logo.svg", badges: ["Website"] },
+  { name: "Pivac", file: "pivac-logo.svg", badges: ["Website", "Support"] },
   { name: "Greenseeker", file: "greenseeker-logo.svg", badges: ["Webshop"] },
   { name: "Klik4", file: "klik-logo.svg", badges: ["Webshop"] },
   { name: "Perpetuum", file: "perpetuum-logo.svg", badges: ["Website", "Partner 10+ Years"] },
+  { name: "Mingot", file: "mingor-logo.svg", badges: ["Website"] },
   { name: "Santini", file: "santini-logo.png", badges: ["Website"] },
 
-  // === Back wall (8 frames) — most important ===
-  { name: "PBZ", file: "pbz-logo.svg", badges: ["Intranet", "Support"] },
-  { name: "Hrvatski Sabor", file: "sabor-logo.svg", badges: ["Website", "Support", "10+ Years"] },
+  // === Back wall (5 frames, right half only) — most important ===
+  { name: "Končar", file: "koncar-logo.svg", badges: ["Website", "Support"] },
   { name: "L'Oréal", file: "loreal-logo.svg", badges: ["Internal Webshop", "Support"] },
   { name: "OTP", file: "otp-logo.svg", badges: ["Website", "Support", "10+ Years"] },
-  { name: "Končar", file: "koncar-logo.svg", badges: ["Website", "Support"] },
+  { name: "Hrvatski Sabor", file: "sabor-logo.svg", badges: ["Website", "Support", "10+ Years"] },
   { name: "Atlantic Grupa", file: "atlantic-logo.svg", badges: ["Webshops"] },
-  { name: "Autohrvatska", file: "autohrvatska-logo.svg", badges: ["Webshop", "Support"] },
-  { name: "Cazmatrans", file: "cazmatrans-logo.jpg", badges: ["Internal App", "Support"] },
 
-  // === Left wall (7 frames) ===
+  // === Left wall (8 frames) ===
   { name: "Sedmi Odjel", file: "sedmi-odjel-logo.svg", badges: ["Website", "Server Partner"] },
   { name: "Barcaffe", file: "barcaffe-logo.svg", badges: ["Webshop", "Support"] },
+  { name: "Cazmatrans", file: "cazmatrans-logo.jpg", badges: ["Internal App", "Support"] },
   { name: "NZJZ", file: "nzjz-logo.svg", badges: ["Website", "Support"] },
   { name: "Cambridge", file: "cambridge-logo.svg", badges: [] },
   { name: "Radiochirurgia", file: "rch-logo.png", badges: ["Website", "Support"] },
   { name: "Farmacia", file: "farmacia-logo.svg", badges: ["Webshop", "Support"] },
-  { name: "Pivac", file: "pivac-logo.svg", badges: ["Website", "Support"] },
+  { name: "PBZ", file: "pbz-logo.svg", badges: ["Intranet", "Support"] },
 ];
 
 export function createLogos(scene: THREE.Scene) {
@@ -68,10 +67,11 @@ export function createLogos(scene: THREE.Scene) {
       width: ROOM_D,
     },
     {
-      center: new THREE.Vector3(0, 0, -halfD + offset),
+      // Right half of back wall only (window on left half)
+      center: new THREE.Vector3(halfW / 2, 0, -halfD + offset),
       right: new THREE.Vector3(1, 0, 0),
       normal: new THREE.Vector3(0, 0, 1),
-      width: ROOM_W,
+      width: halfW,
     },
     {
       center: new THREE.Vector3(-halfW + offset, 0, 0),

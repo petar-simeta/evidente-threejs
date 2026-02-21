@@ -49,15 +49,37 @@ export function createBuilding(scene: THREE.Scene) {
   // --- Walls (as boxes with some thickness) ---
   const wallThick = 0.3;
 
-  // Back wall
-  const backWall = new THREE.Mesh(
-    new THREE.BoxGeometry(W, H, wallThick),
-    wallMat
-  );
-  backWall.position.set(0, H / 2, -HALF_D);
-  backWall.castShadow = true;
-  backWall.receiveShadow = true;
-  scene.add(backWall);
+  // Back wall — with opening matching room window (10×6 at x=-6, y=5)
+  const bwWinW = 10;
+  const bwWinH = 6;
+  const bwWinCX = -6;
+  const bwWinCY = 5;
+  const bwWinL = bwWinCX - bwWinW / 2; // -11
+  const bwWinR = bwWinCX + bwWinW / 2; // -1
+  const bwWinB = bwWinCY - bwWinH / 2; // 2
+  const bwWinT = bwWinCY + bwWinH / 2; // 8
+
+  // Left panel
+  const bwLpW = bwWinL - (-HALF_W);
+  const bwLeft = new THREE.Mesh(new THREE.BoxGeometry(bwLpW, H, wallThick), wallMat);
+  bwLeft.position.set(-HALF_W + bwLpW / 2, H / 2, -HALF_D);
+  bwLeft.castShadow = true; bwLeft.receiveShadow = true;
+  scene.add(bwLeft);
+  // Right panel
+  const bwRpW = HALF_W - bwWinR;
+  const bwRight = new THREE.Mesh(new THREE.BoxGeometry(bwRpW, H, wallThick), wallMat);
+  bwRight.position.set(HALF_W - bwRpW / 2, H / 2, -HALF_D);
+  bwRight.castShadow = true; bwRight.receiveShadow = true;
+  scene.add(bwRight);
+  // Top panel above window
+  const bwTpH = H - bwWinT;
+  const bwTop = new THREE.Mesh(new THREE.BoxGeometry(bwWinW, bwTpH, wallThick), wallMat);
+  bwTop.position.set(bwWinCX, bwWinT + bwTpH / 2, -HALF_D);
+  scene.add(bwTop);
+  // Bottom panel below window
+  const bwBot = new THREE.Mesh(new THREE.BoxGeometry(bwWinW, bwWinB, wallThick), wallMat);
+  bwBot.position.set(bwWinCX, bwWinB / 2, -HALF_D);
+  scene.add(bwBot);
 
   // Left wall
   const leftWall = new THREE.Mesh(
@@ -198,19 +220,17 @@ export function createBuilding(scene: THREE.Scene) {
     scene.add(support);
   }
 
-  // --- Company logo signs (loaded from SVG) ---
-  const logoImg = new Image();
-  logoImg.onload = () => {
-    const aspect = logoImg.width / logoImg.height;
-
-    // Sign above entrance door
+  // --- Entrance sign (above door) ---
+  const entranceLogo = new Image();
+  entranceLogo.onload = () => {
+    const aspect = entranceLogo.width / entranceLogo.height;
     const entranceH = 2.0;
     const entranceW = entranceH * aspect;
     const entranceCanvas = document.createElement("canvas");
     entranceCanvas.width = 512;
     entranceCanvas.height = Math.round(512 / aspect);
     const ctx1 = entranceCanvas.getContext("2d")!;
-    ctx1.drawImage(logoImg, 0, 0, entranceCanvas.width, entranceCanvas.height);
+    ctx1.drawImage(entranceLogo, 0, 0, entranceCanvas.width, entranceCanvas.height);
     const entranceTex = new THREE.CanvasTexture(entranceCanvas);
     entranceTex.minFilter = THREE.LinearFilter;
     entranceTex.colorSpace = THREE.SRGBColorSpace;
@@ -221,15 +241,20 @@ export function createBuilding(scene: THREE.Scene) {
     );
     entranceSign.position.set(0, DOOR_H + 2, HALF_D + 0.2);
     scene.add(entranceSign);
+  };
+  entranceLogo.src = "./logo/evidente-logo-black-bg.svg";
 
-    // Jumbo billboard on top of building
+  // --- Jumbo billboard on top of building ---
+  const billboardLogo = new Image();
+  billboardLogo.onload = () => {
+    const aspect = billboardLogo.width / billboardLogo.height;
     const billboardH = 6;
     const billboardW = billboardH * aspect;
     const billboardCanvas = document.createElement("canvas");
     billboardCanvas.width = 1024;
     billboardCanvas.height = Math.round(1024 / aspect);
     const ctx2 = billboardCanvas.getContext("2d")!;
-    ctx2.drawImage(logoImg, 0, 0, billboardCanvas.width, billboardCanvas.height);
+    ctx2.drawImage(billboardLogo, 0, 0, billboardCanvas.width, billboardCanvas.height);
     const billboardTex = new THREE.CanvasTexture(billboardCanvas);
     billboardTex.minFilter = THREE.LinearFilter;
     billboardTex.colorSpace = THREE.SRGBColorSpace;
@@ -252,7 +277,7 @@ export function createBuilding(scene: THREE.Scene) {
       scene.add(pole);
     }
   };
-  logoImg.src = "./logo/evidente-logo-black-bg.svg";
+  billboardLogo.src = "./logo/evidente-logo-for-top-of-the-building.svg";
 
   // --- Base trim ---
   const baseTrim = new THREE.Mesh(
@@ -262,16 +287,135 @@ export function createBuilding(scene: THREE.Scene) {
   baseTrim.position.set(0, 0.2, 0);
   scene.add(baseTrim);
 
-  // --- Walkway ---
-  const pathMat = new THREE.MeshStandardMaterial({ color: 0x999990, roughness: 0.9 });
-  const path = new THREE.Mesh(
-    new THREE.PlaneGeometry(DOOR_W * 2 + 2, 20),
-    pathMat
+  // --- Sidewalk from entrance to road ---
+  const paveMat = new THREE.MeshStandardMaterial({ color: 0xbbbbaa, roughness: 0.9 });
+  const sidewalk = new THREE.Mesh(
+    new THREE.PlaneGeometry(DOOR_W * 2 + 2, 30),
+    paveMat
   );
-  path.rotation.x = -Math.PI / 2;
-  path.position.set(0, 0.01, HALF_D + 10);
-  path.receiveShadow = true;
-  scene.add(path);
+  sidewalk.rotation.x = -Math.PI / 2;
+  sidewalk.position.set(0, 0.01, HALF_D + 15);
+  sidewalk.receiveShadow = true;
+  scene.add(sidewalk);
+
+  // --- Road (runs along x-axis in front of building) ---
+  const roadMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.95 });
+  const road = new THREE.Mesh(
+    new THREE.PlaneGeometry(400, 12),
+    roadMat
+  );
+  road.rotation.x = -Math.PI / 2;
+  road.position.set(0, 0.02, HALF_D + 32);
+  road.receiveShadow = true;
+  scene.add(road);
+
+  // Road center line (dashed yellow — single stripe)
+  const lineMat = new THREE.MeshStandardMaterial({ color: 0xddcc44, roughness: 0.8 });
+  for (let lx = -180; lx < 180; lx += 8) {
+    const dash = new THREE.Mesh(new THREE.PlaneGeometry(4, 0.2), lineMat);
+    dash.rotation.x = -Math.PI / 2;
+    dash.position.set(lx, 0.025, HALF_D + 32);
+    scene.add(dash);
+  }
+
+  // Road edge lines (white)
+  const edgeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 });
+  for (const zOff of [-6, 6]) {
+    const edge = new THREE.Mesh(new THREE.PlaneGeometry(400, 0.25), edgeMat);
+    edge.rotation.x = -Math.PI / 2;
+    edge.position.set(0, 0.025, HALF_D + 32 + zOff);
+    scene.add(edge);
+  }
+
+  // --- Second building (simple one-story, back-right, no windows) ---
+  const bldg2Mat = new THREE.MeshStandardMaterial({ color: 0xb0a898, roughness: 0.85, metalness: 0.05 });
+  const bldg2W = 40;
+  const bldg2D = 24;
+  const bldg2H = 6;
+  const bldg2X = 45;
+  const bldg2Z = -45;
+
+  // Walls
+  const b2Back = new THREE.Mesh(new THREE.BoxGeometry(bldg2W, bldg2H, 0.3), bldg2Mat);
+  b2Back.position.set(bldg2X, bldg2H / 2, bldg2Z - bldg2D / 2);
+  b2Back.castShadow = true;
+  scene.add(b2Back);
+
+  const b2Front = new THREE.Mesh(new THREE.BoxGeometry(bldg2W, bldg2H, 0.3), bldg2Mat);
+  b2Front.position.set(bldg2X, bldg2H / 2, bldg2Z + bldg2D / 2);
+  b2Front.castShadow = true;
+  scene.add(b2Front);
+
+  const b2Left = new THREE.Mesh(new THREE.BoxGeometry(0.3, bldg2H, bldg2D), bldg2Mat);
+  b2Left.position.set(bldg2X - bldg2W / 2, bldg2H / 2, bldg2Z);
+  b2Left.castShadow = true;
+  scene.add(b2Left);
+
+  const b2Right = new THREE.Mesh(new THREE.BoxGeometry(0.3, bldg2H, bldg2D), bldg2Mat);
+  b2Right.position.set(bldg2X + bldg2W / 2, bldg2H / 2, bldg2Z);
+  b2Right.castShadow = true;
+  scene.add(b2Right);
+
+  // Roof
+  const b2Roof = new THREE.Mesh(
+    new THREE.BoxGeometry(bldg2W + 0.6, 0.3, bldg2D + 0.6),
+    new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.5, metalness: 0.2 })
+  );
+  b2Roof.position.set(bldg2X, bldg2H, bldg2Z);
+  b2Roof.castShadow = true;
+  scene.add(b2Roof);
+
+  // --- "Tržnica Prečko" sign on second building's left wall ---
+  const signCanvas = document.createElement("canvas");
+  signCanvas.width = 1024;
+  signCanvas.height = 256;
+  const sctx = signCanvas.getContext("2d")!;
+
+  // Aged/weathered background panel
+  sctx.fillStyle = "#8b7355";
+  sctx.fillRect(0, 0, 1024, 256);
+
+  // Subtle weathering streaks
+  sctx.globalAlpha = 0.08;
+  for (let i = 0; i < 40; i++) {
+    const sx = Math.random() * 1024;
+    const sw = 2 + Math.random() * 6;
+    sctx.fillStyle = Math.random() > 0.5 ? "#5a4a3a" : "#a09080";
+    sctx.fillRect(sx, 0, sw, 256);
+  }
+  sctx.globalAlpha = 1.0;
+
+  // Border
+  sctx.strokeStyle = "#5a4a3a";
+  sctx.lineWidth = 8;
+  sctx.strokeRect(12, 12, 1000, 232);
+
+  // Main text
+  sctx.fillStyle = "#1a1208";
+  sctx.font = "bold 90px DM Sans, Helvetica, Arial, sans-serif";
+  sctx.textAlign = "center";
+  sctx.textBaseline = "middle";
+  sctx.fillText("TRŽNICA PREČKO", 512, 128);
+
+  const signTex = new THREE.CanvasTexture(signCanvas);
+  signTex.minFilter = THREE.LinearFilter;
+  signTex.colorSpace = THREE.SRGBColorSpace;
+
+  const signW = 12;
+  const signH = signW * (256 / 1024);
+  const sign = new THREE.Mesh(
+    new THREE.PlaneGeometry(signW, signH),
+    new THREE.MeshStandardMaterial({
+      map: signTex,
+      roughness: 0.85,
+      metalness: 0.02,
+    })
+  );
+  // Left wall faces -x (toward main building)
+  sign.rotation.y = -Math.PI / 2;
+  sign.position.set(bldg2X - bldg2W / 2 - 0.16, bldg2H * 0.65, bldg2Z);
+  scene.add(sign);
+
 }
 
 // ========================================
@@ -322,7 +466,7 @@ function addSideWindows(
 ) {
   const cols = 6;
   const spacing = D / (cols + 1);
-  const rowYs = [4, 12, 20, 28, 36];
+  const rowYs = [12, 20, 28, 36];
 
   for (const y of rowYs) {
     for (let col = 0; col < cols; col++) {
@@ -347,7 +491,7 @@ function addBackWindows(
 ) {
   const cols = 6;
   const spacing = W / (cols + 1);
-  const rowYs = [4, 12, 20, 28, 36];
+  const rowYs = [12, 20, 28, 36];
 
   for (const y of rowYs) {
     for (let col = 0; col < cols; col++) {
@@ -371,7 +515,7 @@ function addFrontWindows(
   winH: number,
   panelW: number,
 ) {
-  const lowerYs = [4, 12];
+  const lowerYs = [12];
   const upperYs = [20, 28, 36];
 
   // Floors 1-2: 2 windows per side panel (avoiding door area)
@@ -434,3 +578,4 @@ function addWindowFrame(
     scene.add(bar);
   }
 }
+

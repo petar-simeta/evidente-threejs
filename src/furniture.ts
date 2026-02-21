@@ -11,14 +11,14 @@ export const TABLE_BOUNDS = {
 
 export const PONG_BOUNDS = {
   cx: -5, cz: 7,
-  hw: 4.3, hd: 2.6,
+  hw: 2.6, hd: 4.3,
 };
 
 const PLANT_CORNERS: [number, number][] = [
-  [15.5, 15.5],
-  [-15.5, 15.5],
-  [15.5, -15.5],
-  [-15.5, -15.5],
+  [15.5, 20],
+  [-15.5, 20],
+  [15.5, -20],
+  [-15.5, -20],
 ];
 
 export function createFurniture(scene: THREE.Scene) {
@@ -155,52 +155,44 @@ function createBarTable(scene: THREE.Scene) {
 // PING PONG TABLE
 // ========================
 function createPingPongTable(scene: THREE.Scene) {
-  const tableW = 8;
-  const tableD = 4.5;
+  const tableW = 4.5;  // rotated: short side on x
+  const tableD = 8;    // rotated: long side on z
   const tableH = 2.2;
   const cx = PONG_BOUNDS.cx;
   const cz = PONG_BOUNDS.cz;
 
-  // Table top with markings
+  // Table top with markings (canvas long axis = z after rotation)
   const canvas = document.createElement("canvas");
-  canvas.width = 512;
-  canvas.height = 288;
+  canvas.width = 288;
+  canvas.height = 512;
   const ctx = canvas.getContext("2d")!;
 
-  // Green surface
   ctx.fillStyle = "#1a6b30";
-  ctx.fillRect(0, 0, 512, 288);
+  ctx.fillRect(0, 0, 288, 512);
 
-  // White edge lines
   ctx.strokeStyle = "#ffffff";
   ctx.lineWidth = 3;
-  ctx.strokeRect(8, 8, 496, 272);
+  ctx.strokeRect(8, 8, 272, 496);
 
-  // Center line (across width)
+  // Center line (across short side)
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(256, 8);
-  ctx.lineTo(256, 280);
+  ctx.moveTo(8, 256);
+  ctx.lineTo(280, 256);
   ctx.stroke();
 
-  // Center line (along length — for doubles)
+  // Center line (along long side — doubles)
   ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.moveTo(8, 144);
-  ctx.lineTo(504, 144);
+  ctx.moveTo(144, 8);
+  ctx.lineTo(144, 504);
   ctx.stroke();
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.minFilter = THREE.LinearFilter;
   tex.colorSpace = THREE.SRGBColorSpace;
 
-  const topMat = new THREE.MeshStandardMaterial({
-    map: tex,
-    roughness: 0.3,
-    metalness: 0.05,
-  });
-
-  // Underside is dark
+  const topMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.3, metalness: 0.05 });
   const underMat = new THREE.MeshStandardMaterial({ color: 0x1a3a1a, roughness: 0.6 });
   const topMaterials = [underMat, underMat, topMat, underMat, underMat, underMat];
 
@@ -227,30 +219,19 @@ function createPingPongTable(scene: THREE.Scene) {
     scene.add(leg);
   }
 
-  // Net
+  // Net (now across x-axis, dividing the long z-side)
   const netMat = new THREE.MeshStandardMaterial({
-    color: 0xdddddd,
-    roughness: 0.8,
-    transparent: true,
-    opacity: 0.6,
-    side: THREE.DoubleSide,
+    color: 0xdddddd, roughness: 0.8, transparent: true, opacity: 0.6, side: THREE.DoubleSide,
   });
-  const netMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(tableD + 0.4, 0.3),
-    netMat
-  );
+  const netMesh = new THREE.Mesh(new THREE.PlaneGeometry(tableW + 0.4, 0.3), netMat);
   netMesh.position.set(cx, FLOOR_Y + tableH + 0.19, cz);
-  netMesh.rotation.y = Math.PI / 2;
   scene.add(netMesh);
 
-  // Net posts
+  // Net posts (on x-edges now)
   const postMat = new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.5, metalness: 0.3 });
-  for (const zOff of [-tableD / 2 - 0.15, tableD / 2 + 0.15]) {
-    const post = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.03, 0.03, 0.35, 8),
-      postMat
-    );
-    post.position.set(cx, FLOOR_Y + tableH + 0.175, cz + zOff);
+  for (const xOff of [-tableW / 2 - 0.15, tableW / 2 + 0.15]) {
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.35, 8), postMat);
+    post.position.set(cx + xOff, FLOOR_Y + tableH + 0.175, cz);
     scene.add(post);
   }
 }
@@ -261,16 +242,34 @@ function createPingPongTable(scene: THREE.Scene) {
 function loadTrees(scene: THREE.Scene) {
   const GROUND_Y = -0.05;
 
-  // 5 trees, only left and right sides, well away from building (edges at ±23)
+  // Trees scattered around buildings
+  // Main building: ±23 on x/z. Second building: x 30–70, z -57 to -33.
+  // Keep 8+ units clearance from walls.
   const spots: { x: number; z: number; height: number; rot: number }[] = [
-    // Right side
-    { x:  40, z: -8,  height: 22, rot: 0.4 },
-    { x:  38, z: 10,  height: 18, rot: 2.1 },
+    // Left cluster
+    { x: -55, z:  15, height: 20, rot: 0.4 },
+    { x: -42, z:   5, height: 24, rot: 1.2 },
+    { x: -65, z:  -5, height: 18, rot: 3.8 },
+    { x: -48, z: -20, height: 22, rot: 5.5 },
+    { x: -38, z:  38, height: 16, rot: 2.3 },
+    { x: -70, z: -25, height: 20, rot: 4.1 },
+    { x: -50, z: -40, height: 17, rot: 0.9 },
+    { x: -35, z: -35, height: 21, rot: 3.2 },
 
-    // Left side
-    { x: -42, z: -5,  height: 24, rot: 1.2 },
-    { x: -38, z: 12,  height: 17, rot: 3.8 },
-    { x: -45, z: -16, height: 20, rot: 5.5 },
+    // Right side
+    { x:  55, z:   8, height: 20, rot: 2.6 },
+    { x:  38, z:  35, height: 16, rot: 0.8 },
+    { x:  45, z: -15, height: 18, rot: 1.7 },
+    { x:  80, z: -10, height: 22, rot: 4.5 },
+    { x:  78, z: -45, height: 17, rot: 1.1 },
+    { x:  80, z: -55, height: 20, rot: 3.3 },
+
+    // Front-left (between building and road)
+    { x: -35, z:  34, height: 19, rot: 1.4 },
+    { x: -55, z:  38, height: 22, rot: 3.5 },
+
+    // Far back-left
+    { x: -60, z: -55, height: 18, rot: 2.0 },
   ];
 
   const loader = new GLTFLoader();

@@ -1,18 +1,19 @@
 import * as THREE from "three";
 
-const LIME = 0xc6fb50;
+const SKY = 0x87ceeb;
+const GRASS = 0x4a8c2a;
 
 export function createScene() {
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(LIME);
-  scene.fog = new THREE.Fog(LIME, 60, 180);
+  scene.background = new THREE.Color(SKY);
+  scene.fog = new THREE.Fog(SKY, 100, 280);
 
-  // Ground plane
-  const groundGeo = new THREE.PlaneGeometry(600, 600);
-  const groundMat = new THREE.MeshStandardMaterial({ color: LIME });
+  // Grass ground
+  const groundGeo = new THREE.PlaneGeometry(800, 800);
+  const groundMat = new THREE.MeshStandardMaterial({ color: GRASS, roughness: 0.95 });
   const ground = new THREE.Mesh(groundGeo, groundMat);
   ground.rotation.x = -Math.PI / 2;
-  ground.position.y = -0.05; // below room floor to avoid z-fighting
+  ground.position.y = -0.05;
   ground.receiveShadow = true;
   scene.add(ground);
 

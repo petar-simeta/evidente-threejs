@@ -3,7 +3,7 @@ import * as THREE from "three";
 // Main room: 26 × 26 × 10
 export const ROOM_W = 34;
 export const ROOM_H = 10;
-export const ROOM_D = 34;
+export const ROOM_D = 46;
 const HALF_W = ROOM_W / 2; // 13
 const HALF_D = ROOM_D / 2; // 13
 const WALL_T = 0.25;
@@ -171,8 +171,52 @@ export function createRoom(scene: THREE.Scene) {
   // Right wall
   addBox(scene, wallMat, WALL_T, ROOM_H, ROOM_D, HALF_W, ROOM_H / 2, 0);
 
-  // Back wall
-  addBox(scene, wallMat, ROOM_W, ROOM_H, WALL_T, 0, ROOM_H / 2, -HALF_D);
+  // Back wall — with window opening on left half
+  const winW = 10;
+  const winH = 6;
+  const winCX = -6;   // center x (left half)
+  const winCY = 5;    // center y
+  const winL = winCX - winW / 2; // -11
+  const winR = winCX + winW / 2; // -1
+  const winB = winCY - winH / 2; // 2
+  const winT = winCY + winH / 2; // 8
+
+  // Left panel
+  const lpW = winL - (-HALF_W);
+  addBox(scene, wallMat, lpW, ROOM_H, WALL_T, -HALF_W + lpW / 2, ROOM_H / 2, -HALF_D);
+  // Right panel
+  const rpW = HALF_W - winR;
+  addBox(scene, wallMat, rpW, ROOM_H, WALL_T, HALF_W - rpW / 2, ROOM_H / 2, -HALF_D);
+  // Top panel above window
+  const tpH = ROOM_H - winT;
+  addBox(scene, wallMat, winW, tpH, WALL_T, winCX, winT + tpH / 2, -HALF_D);
+  // Bottom panel below window
+  addBox(scene, wallMat, winW, winB, WALL_T, winCX, winB / 2, -HALF_D);
+
+  // Glass pane
+  const backGlass = new THREE.Mesh(
+    new THREE.PlaneGeometry(winW - 0.2, winH - 0.2),
+    new THREE.MeshStandardMaterial({
+      color: 0x88aacc, roughness: 0.05, metalness: 0.4,
+      side: THREE.DoubleSide, transparent: true, opacity: 0.3,
+    })
+  );
+  backGlass.position.set(winCX, winCY, -HALF_D);
+  backGlass.rotation.y = Math.PI;
+  scene.add(backGlass);
+
+  // Window frame
+  const frameMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.5, metalness: 0.3 });
+  const ft = 0.08;
+  // Horizontal bars
+  addBox(scene, frameMat, winW + ft, ft, ft, winCX, winT, -HALF_D);
+  addBox(scene, frameMat, winW + ft, ft, ft, winCX, winB, -HALF_D);
+  // Vertical bars
+  addBox(scene, frameMat, ft, winH, ft, winL, winCY, -HALF_D);
+  addBox(scene, frameMat, ft, winH, ft, winR, winCY, -HALF_D);
+  // Center cross
+  addBox(scene, frameMat, ft, winH, ft, winCX, winCY, -HALF_D);
+  addBox(scene, frameMat, winW, ft, ft, winCX, winCY, -HALF_D);
 
   // Left wall (solid)
   addBox(scene, wallMat, WALL_T, ROOM_H, ROOM_D, -HALF_W, ROOM_H / 2, 0);
