@@ -19,6 +19,8 @@ interface Keys {
   right: boolean;
 }
 
+const DOOR_HALF_W = 3;
+
 export interface Controls {
   pointerLock: PointerLockControls;
   update: (delta: number) => void;
@@ -93,6 +95,11 @@ export function createControls(
           camera.position.z = bounds.cz + Math.sign(dz) * bounds.hd;
         }
       }
+    }
+
+    // Exit through door: if player reaches front wall in door opening, unlock
+    if (camera.position.z >= Z_MAX && Math.abs(camera.position.x) < DOOR_HALF_W) {
+      controls.unlock();
     }
 
     camera.position.y = PLAYER_HEIGHT;

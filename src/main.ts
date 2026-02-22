@@ -15,6 +15,7 @@ async function main() {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
   const overlay = document.getElementById("overlay")!;
   const welcome = document.getElementById("welcome")!;
+  const escHint = document.getElementById("esc-hint")!;
   const loader = document.getElementById("loader")!;
 
   // Core setup
@@ -76,11 +77,16 @@ async function main() {
 
   controls.pointerLock.addEventListener("lock", () => {
     overlay.classList.add("hidden");
+    escHint.classList.remove("hidden");
     controls!.enable();
   });
 
   controls.pointerLock.addEventListener("unlock", () => {
+    // Reset camera to room center
+    camera.position.set(0, 5, 0);
+    camera.lookAt(0, 5, -1);
     overlay.classList.remove("hidden");
+    escHint.classList.add("hidden");
   });
 }
 
